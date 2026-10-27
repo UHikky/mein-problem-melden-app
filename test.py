@@ -38,7 +38,7 @@ if qr_platz is None:
     st.warning("Bitte nutzen Sie die offizielle Desktop-Verknüpfung oder scannen Sie den QR-Code an Ihrem Platz.")
     st.stop()
 
-st.info(f"📍 **Standort fixiert: {qr_platz}**")
+st.info(f"📍 **Sitzplatz: {qr_platz}**")
 st.write("") 
 
 problem_text = st.text_area(label="Problembeschreibung", placeholder="Beschreibe dein Problem hier...", label_visibility="collapsed", height=200)
