@@ -29,7 +29,7 @@ problem_text = st.text_area(label="Problembeschreibung", placeholder="Beschreibe
 
 # 🚨 HIER NUTZEN WIR EINEN KOSTENLOSEN WEB-DIENST, DER REINE TEXT-EMAILS VERSCHICKT 🚨
 # Ersetzen Sie 'IHRE_FIRMEN_EMAIL' durch Ihre echte geschäftliche E-Mail-Adresse!
-FIRMEN_EMAIL = "alba.henarejos-ortega@ibb.com" 
+FIRMEN_EMAIL = "alba.h.ortega@gmail.com" 
 
 # --- ABSENDEN BUTTON ---
 if st.button("Senden ✓"):
