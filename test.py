@@ -1,24 +1,7 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-import os
+import requests
 
-EXCEL_DATEI = "Lokale_ProblemMeldungen.xlsx"
-
-# --- 🚨 GEHEIMER EXCEL-TUNNEL (OHNE JAVASCRIPT) 🚨 ---
-# Wenn Excel die URL mit ?download=true aufruft, senden wir sofort reines CSV zurück
-query_params = st.query_params
-if query_params.get("download") == "true":
-    if os.path.exists(EXCEL_DATEI):
-        df = pd.read_excel(EXCEL_DATEI)
-        # Verwandelt die Excel-Daten in ein CSV-Textformat für Excel
-        st.text(df.to_csv(index=False, sep=";"))
-    else:
-        st.text("Zeitstempel;Sitzplatz;Problem\n;;")
-    st.stop() # Stoppt die Webseite hier, damit kein HTML/JavaScript geladen wird!
-
-
-# --- SEITEN-STYLING (iOS Minimal-Look für Smartphones) ---
+# --- SEITEN-STYLING (iOS Minimal-Look) ---
 st.set_page_config(page_title="Problem Melden", page_icon="🚨", layout="centered")
 
 st.markdown("""
@@ -34,6 +17,7 @@ st.markdown("""
 st.markdown('<p class="app-title">Problem Melden</p>', unsafe_allow_html=True)
 
 # --- SITZPLATZ-PRÜFUNG ---
+query_params = st.query_params
 qr_platz = query_params.get("platz", None)
 
 if qr_platz is None:
@@ -41,23 +25,30 @@ if qr_platz is None:
     st.stop()
 
 st.info(f"📍 **Sitzplatz: {qr_platz}**")
-st.write("") 
-
 problem_text = st.text_area(label="Problembeschreibung", placeholder="Beschreibe dein Problem hier...", label_visibility="collapsed", height=200)
+
+# 🚨 HIER NUTZEN WIR EINEN KOSTENLOSEN WEB-DIENST, DER REINE TEXT-EMAILS VERSCHICKT 🚨
+# Ersetzen Sie 'IHRE_FIRMEN_EMAIL' durch Ihre echte geschäftliche E-Mail-Adresse!
+FIRMEN_EMAIL = "alba.henarejos-ortega@ibb.com" 
 
 # --- ABSENDEN BUTTON ---
 if st.button("Senden ✓"):
     if problem_text.strip() == "":
         st.warning("Bitte beschreibe zuerst das Problem.")
     else:
-        zeitpunkt = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        neue_daten = pd.DataFrame([{"Zeitstempel": zeitpunkt, "Sitzplatz": str(qr_platz), "Problem": str(problem_text)}])
-        
-        if os.path.exists(EXCEL_DATEI):
-            alt_daten = pd.read_excel(EXCEL_DATEI)
-            kombiniert = pd.concat([alt_daten, neue_daten], ignore_index=True)
-            kombiniert.to_excel(EXCEL_DATEI, index=False)
-        else:
-            neue_daten.to_excel(EXCEL_DATEI, index=False)
-            
-        st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich gespeichert.")
+        with st.spinner("Wird übermittelt..."):
+            # Formsubmit ist ein kostenloser Dienst, der das Formular sicher als E-Mail an Sie weiterleitet
+            form_url = f"https://formsubmit.co{FIRMEN_EMAIL}"
+            payload = {
+                "Sitzplatz": str(qr_platz),
+                "Problembeschreibung": str(problem_text),
+                "_subject": f"🚨 Problem-Meldung: Standort {qr_platz}"
+            }
+            try:
+                antwort = requests.post(form_url, data=payload)
+                if antwort.status_code == 200:
+                    st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich übermittelt.")
+                else:
+                    st.error("Übermittlungsfehler. Bitte versuchen Sie es später noch einmal.")
+            except Exception as e:
+                st.error(f"Sende-Fehler: {e}")
