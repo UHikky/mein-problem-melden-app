@@ -62,7 +62,7 @@ if st.button("Senden"):
         try:
             # 1. Bestehende Daten aus Google Sheets laden
             try:
-                # 'Sheet1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
+                # 'Tabellenblatt1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
                 alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", ttl=0)
                 kombiniert = pd.concat([alt_daten, neue_daten], ignore_index=True)
             except Exception:
