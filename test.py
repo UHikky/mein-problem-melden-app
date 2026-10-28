@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_files_connection import FilesConnection
+from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 import pandas as pd
 
@@ -45,7 +45,7 @@ problem_text = st.text_area(label="Problembeschreibung", placeholder="Beschreibe
 
 # --- GOOGLE SHEETS VERBINDUNG ---
 try:
-    conn = st.connection("gsheets", type=FilesConnection)
+    conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception as e:
     st.error("Fehler bei der Initialisierung der Google-Verbindung.")
     st.info(f"Details: {e}")
@@ -61,19 +61,18 @@ if st.button("Senden"):
        
         try:
             # 1. Bestehende Daten aus Google Sheets laden
-            # Hinweis: Wenn das Blatt in Google Sheets anders heißt, ändere 'Sheet1' entsprechend ab.
             try:
-                alt_daten = conn.read("ProblemMeldungen_Online/Sheet1", ttl=0)
+                # 'Sheet1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
+                alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", ttl=0)
                 kombiniert = pd.concat([alt_daten, neue_daten], ignore_index=True)
             except Exception:
-                # Falls die Tabelle noch komplett leer ist oder das Blatt nicht existiert
+                # Falls die Tabelle noch komplett leer ist
                 kombiniert = neue_daten
                
             # 2. Daten zurück in die Google Tabelle schreiben
-            # Da Google Sheets das Styling automatisch beibehält, reicht ein einfacher Upload
-            conn.write("ProblemMeldungen_Online/Sheet1", kombiniert)
+            conn.update(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", data=kombiniert)
                                 
-            st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich an Google Sheets übermittelt.")
+            st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich übermittelt.")
             
         except Exception as e:
             st.error(f"Fehler beim Schreiben in Google Sheets: {e}")
