@@ -59,20 +59,21 @@ if st.button("Senden"):
         zeitpunkt = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         neue_daten = pd.DataFrame([{"Zeitstempel": zeitpunkt, "Sitzplatz": str(qr_platz), "Problem": str(problem_text)}])
        
-                try:
-            # 1. Bestehende Daten aus Google Sheets laden (jetzt mit "Tabellenblatt1")
+        try:
+            # 1. Bestehende Daten aus Google Sheets laden
             try:
-                alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Tabellenblatt1", ttl=0)
+                # 'Sheet1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
+                alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", ttl=0)
                 kombiniert = pd.concat([alt_daten, neue_daten], ignore_index=True)
             except Exception:
-                # Falls die Tabelle noch komplett leer ist oder das Blatt anders hieß
+                # Falls die Tabelle noch komplett leer ist
                 kombiniert = neue_daten
                
             # 2. Daten zurück in die Google Tabelle schreiben
-            conn.update(spreadsheet="ProblemMeldungen_Online", worksheet="Tabellenblatt1", data=kombiniert)
+            conn.update(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", data=kombiniert)
                                 
             st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich übermittelt.")
             
         except Exception as e:
             st.error(f"Fehler beim Schreiben in Google Sheets: {e}")
-            st.info("Bitte prüfe, ob der Name des Tabellenblatts unten links in Google Sheets exakt mit dem Code übereinstimmt.")
+            st.info("Bitte prüfe, ob du die Tabelle für die E-Mail-Adresse aus deinen Secrets freigegeben hast.")
