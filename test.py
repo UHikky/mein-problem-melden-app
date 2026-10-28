@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 import pandas as pd
 import streamlit as st
+import requests
 
 # --- SEITEN-STYLING (iOS Minimal-Look) ---
 st.set_page_config(page_title="Problem Melden", page_icon="🚨", layout="centered")
