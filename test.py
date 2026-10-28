@@ -62,15 +62,15 @@ if st.button("Senden"):
         try:
             # 1. Bestehende Daten aus Google Sheets laden
             try:
-                # 'Tabellenblatt1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
-                alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", ttl=0)
+                # 'Sheet1' ist der Name des Tabellenblatts unten links in Google Sheets (ggf. in 'Tabellenblatt1' ändern)
+                alt_daten = conn.read(spreadsheet="ProblemMeldungen_Online", worksheet="Tabellenblatt1", ttl=0)
                 kombiniert = pd.concat([alt_daten, neue_daten], ignore_index=True)
             except Exception:
                 # Falls die Tabelle noch komplett leer ist
                 kombiniert = neue_daten
                
             # 2. Daten zurück in die Google Tabelle schreiben
-            conn.update(spreadsheet="ProblemMeldungen_Online", worksheet="Sheet1", data=kombiniert)
+            conn.update(spreadsheet="ProblemMeldungen_Online", worksheet="Tabellenblatt1", data=kombiniert)
                                 
             st.success(f"🎉 Vielen Dank! Das Problem für {qr_platz} wurde erfolgreich übermittelt.")
             
