@@ -1,0 +1,50 @@
+name: Wake Up Streamlit App (Sachsen Feiertage)
+
+on:
+  schedule:
+    # Montag bis Freitag um 05:00 UTC (ca. 6:00 Uhr im Winter / 7:00 Uhr im Sommer in DE)
+    - cron: '0 5 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  ping_if_working_day:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install holidays library
+        run: pip install holidays requests
+
+      - name: Check for holiday and ping
+        shell: python
+        run: |
+          import sys
+          import datetime
+          import holidays
+          import requests
+
+          # Aktuelles Datum in Deutschland berechnen (GitHub läuft auf UTC)
+          today_de = (datetime.datetime.utcnow() + datetime.timedelta(hours=1)).date()
+          
+          # Feiertage speziell für Sachsen ('SN') laden
+          sachsen_holidays = holidays.Germany(years=today_de.year, subdiv='SN')
+
+          if today_de in sachsen_holidays:
+              print(f"Heute ({today_de}) ist ein Feiertag in Sachsen: {sachsen_holidays.get(today_de)}. App bleibt im Winterschlaf.")
+              sys.exit(0)
+          
+          print(f"Heute ({today_de}) ist ein normaler Werktag in Sachsen. Wecke App auf...")
+          
+          # Deine eingetragene URL:
+          url = "https://mein-problem-melden.streamlit.app/"
+          try:
+              response = requests.head(url, timeout=30)
+              print(f"Erfolgreich aufgeweckt! Status Code: {response.status_code}")
+          except Exception as e:
+              print(f"Fehler beim Aufruf der App: {e}")
