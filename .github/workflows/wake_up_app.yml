@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2 # Aktualisiert auf die neueste Version
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.3.0 # Aktualisiert auf die neueste Version
         with:
           python-version: '3.10'
 
@@ -47,23 +47,19 @@ jobs:
           url = "https://streamlit.app"
           
           with sync_playwright() as p:
-              # Startet einen unsichtbaren Browser
               browser = p.chromium.launch(headless=True)
               page = browser.new_page()
               
               print(f"Öffne {url}...")
               page.goto(url)
               
-              # Wartet kurz, falls die Seite geladen wird
               time.sleep(5)
               
-              # Sucht nach dem "Yes, get this app back up!" Button (Groß-/Kleinschreibung ignorieren)
               button = page.get_by_role("button", name="Yes, get this app back up!", exact=False)
               
               if button.count() > 0:
                   print("Schlafmodus-Seite erkannt. Klicke auf den 'Yes, get this app back up!' Button...")
                   button.click()
-                  # Wartet 15 Sekunden, damit Streamlit den Startvorgang einleiten kann
                   time.sleep(15)
                   print("Button erfolgreich geklickt und Startvorgang eingeleitet!")
               else:
