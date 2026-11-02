@@ -1,4 +1,4 @@
-name: Wake Up Streamlit App (Sachsen Feiertage)
+name: Wake Up Streamlit App (Sachsen Feiertage mit Button-Klick)
 
 on:
   schedule:
@@ -18,18 +18,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install holidays library
-        run: pip install holidays requests
+      - name: Install dependencies
+        run: |
+          pip install holidays requests playwright
+          playwright install chromium
 
-      - name: Check for holiday and ping
+      - name: Check for holiday and wake up app
         shell: python
         run: |
           import sys
           import datetime
           import holidays
-          import requests
+          import time
+          from playwright.sync_api import sync_playwright
 
-          # Aktuelles Datum in Deutschland berechnen (GitHub läuft auf UTC)
+          # Aktuelles Datum in Deutschland berechnen
           today_de = (datetime.datetime.utcnow() + datetime.timedelta(hours=1)).date()
           
           # Feiertage speziell für Sachsen ('SN') laden
@@ -39,12 +42,31 @@ jobs:
               print(f"Heute ({today_de}) ist ein Feiertag in Sachsen: {sachsen_holidays.get(today_de)}. App bleibt im Winterschlaf.")
               sys.exit(0)
           
-          print(f"Heute ({today_de}) ist ein normaler Werktag in Sachsen. Wecke App auf...")
+          print(f"Heute ({today_de}) ist ein normaler Werktag in Sachsen. Starte Browser zum Aufwecken...")
           
-          # Deine eingetragene URL:
-          url = "https://mein-problem-melden.streamlit.app/"
-          try:
-              response = requests.head(url, timeout=30)
-              print(f"Erfolgreich aufgeweckt! Status Code: {response.status_code}")
-          except Exception as e:
-              print(f"Fehler beim Aufruf der App: {e}")
+          url = "https://streamlit.app"
+          
+          with sync_playwright() as p:
+              # Startet einen unsichtbaren Browser
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              
+              print(f"Öffne {url}...")
+              page.goto(url)
+              
+              # Wartet kurz, falls die Seite geladen wird
+              time.sleep(5)
+              
+              # Sucht nach dem "Yes, get this app back up!" Button (Groß-/Kleinschreibung ignorieren)
+              button = page.get_by_role("button", name="Yes, get this app back up!", exact=False)
+              
+              if button.count() > 0:
+                  print("Schlafmodus-Seite erkannt. Klicke auf den 'Yes, get this app back up!' Button...")
+                  button.click()
+                  # Wartet 15 Sekunden, damit Streamlit den Startvorgang einleiten kann
+                  time.sleep(15)
+                  print("Button erfolgreich geklickt und Startvorgang eingeleitet!")
+              else:
+                  print("Die App war anscheinend schon wach oder der Button wurde nicht gefunden.")
+              
+              browser.close()
